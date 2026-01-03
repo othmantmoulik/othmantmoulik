@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlMasterclass - Build Wealth Without Losing Your Soul</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .hero p {
+            font-size: 1.5em;
+            margin-bottom: 40px;
+            opacity: 0.95;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #764ba2;
+            font-weight: bold;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .features {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .stats {
+            max-width: 1000px;
+            margin: 60px auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #764ba2;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2em;
+            }
+
+            .hero p {
+                font-size: 1.2em;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>Build Wealth Without Losing Your Soul</h1>
+        <p>Join 2,000+ Muslims learning to create success the halal way</p>
+
+        <div class="cta-buttons">
+            <% if (user) { %>
+                <a href="/dashboard" class="btn btn-primary">Go to Dashboard</a>
+            <% } else { %>
+                <a href="/join" class="btn btn-primary">Start Free</a>
+                <a href="/login" class="btn btn-secondary">Login</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="features">
+        <div class="feature-card">
+            <div class="feature-icon">🎓</div>
+            <h3>World-Class Training</h3>
+            <p>Learn from proven strategies that generated $10M+ in sales</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">💰</div>
+            <h3>Earn As You Learn</h3>
+            <p>Share your affiliate link and earn 30% recurring commissions for life</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🤝</div>
+            <h3>Strong Community</h3>
+            <p>Connect with thousands of Muslim entrepreneurs building wealth together</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🕌</div>
+            <h3>Faith-Centered</h3>
+            <p>Build success without compromising your Islamic values</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🚀</div>
+            <h3>Proven Methods</h3>
+            <p>Battle-tested strategies from someone who went from eviction to empire</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">🌍</div>
+            <h3>Global Impact</h3>
+            <p>Join students from 40+ countries making a difference</p>
+        </div>
+    </div>
+
+    <div class="stats">
+        <div>
+            <div class="stat-number">$10M+</div>
+            <div class="stat-label">Generated in Sales</div>
+        </div>
+        <div>
+            <div class="stat-number">2,000+</div>
+            <div class="stat-label">Students</div>
+        </div>
+        <div>
+            <div class="stat-number">30+</div>
+            <div class="stat-label">Water Wells Built</div>
+        </div>
+        <div>
+            <div class="stat-number">40+</div>
+            <div class="stat-label">Countries</div>
+        </div>
+    </div>
+</body>
+</html>

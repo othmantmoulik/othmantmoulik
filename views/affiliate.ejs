@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Dashboard - AlMasterclass</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 30px;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .nav-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #764ba2;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-link {
+            color: #333;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background: #f0f0f0;
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header h1 {
+            color: #764ba2;
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .badge-free {
+            background: #6c757d;
+            color: white;
+        }
+
+        .badge-upgraded {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge-churned {
+            background: #dc3545;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <div class="nav-brand">AlMasterclass</div>
+            <div class="nav-links">
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/courses" class="nav-link">Courses</a>
+                <a href="/community" class="nav-link">Community</a>
+                <a href="/affiliate" class="nav-link">Affiliate</a>
+                <form action="/api/auth/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="btn-logout">Logout</button>
+                </form>
+            </div>
+        </nav>
+
+        <div class="header">
+            <h1>💰 Affiliate Dashboard</h1>
+            <p>Track your referrals and earnings in real-time</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number"><%= affiliateStats.total_referrals || 0 %></div>
+                <div class="stat-label">Total Referrals</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-number"><%= affiliateStats.active_referrals || 0 %></div>
+                <div class="stat-label">Active Subscribers</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-number">$<%= (affiliateStats.total_commissions_earned || 0).toFixed(2) %></div>
+                <div class="stat-label">Total Earned</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-number">$<%= (affiliateStats.pending_commissions || 0).toFixed(2) %></div>
+                <div class="stat-label">Pending Payout</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-number">$<%= (affiliateStats.paid_commissions || 0).toFixed(2) %></div>
+                <div class="stat-label">Paid Out</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Your Referrals</h2>
+
+            <% if (referrals && referrals.length > 0) { %>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                        <th>Upgraded On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% referrals.forEach(referral => { %>
+                    <tr>
+                        <td><%= referral.full_name %></td>
+                        <td><%= referral.email %></td>
+                        <td><%= new Date(referral.signup_date).toLocaleDateString() %></td>
+                        <td>
+                            <span class="badge badge-<%= referral.status %>">
+                                <%= referral.status === 'free' ? 'Free' : referral.status === 'upgraded' ? 'Premium' : 'Churned' %>
+                            </span>
+                        </td>
+                        <td>
+                            <%= referral.upgraded_at ? new Date(referral.upgraded_at).toLocaleDateString() : '-' %>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            <% } else { %>
+            <div class="empty-state">
+                <div class="empty-state-icon">🎯</div>
+                <h3>No referrals yet</h3>
+                <p>Share your affiliate link to start earning commissions!</p>
+                <p style="margin-top: 20px; font-family: monospace; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <%= affiliateLink %>
+                </p>
+            </div>
+            <% } %>
+        </div>
+
+        <div class="card">
+            <h2>💡 Maximize Your Earnings</h2>
+            <ul style="line-height: 2.5; color: #666;">
+                <li><strong>Share on social media:</strong> Post your link on Facebook, Twitter, Instagram</li>
+                <li><strong>Email your network:</strong> Send personalized emails to friends and colleagues</li>
+                <li><strong>Create content:</strong> Write blog posts or make videos about your experience</li>
+                <li><strong>Join communities:</strong> Share in Muslim entrepreneur groups (respectfully)</li>
+                <li><strong>Be authentic:</strong> Share your genuine journey and results</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>Commission Structure</h2>
+            <p style="color: #666; line-height: 1.8;">
+                You earn <strong>30% recurring commission</strong> on all payments from your referrals.<br>
+                <strong>Monthly Plan:</strong> $47/month → You earn $14.10/month per referral<br>
+                <strong>Yearly Plan:</strong> $470/year → You earn $141/year per referral<br><br>
+                Commissions are paid automatically when you reach $50 minimum payout.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

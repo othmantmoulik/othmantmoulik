@@ -1,0 +1,26 @@
+{
+  "name": "masterclass-platform",
+  "version": "1.0.0",
+  "description": "Masterclass clone with affiliate system and Stripe integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "migrate": "node scripts/migrate.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^16.3.1",
+    "stripe": "^14.10.0",
+    "sqlite3": "^5.1.6",
+    "cookie-parser": "^1.4.6",
+    "uuid": "^9.0.1",
+    "ejs": "^3.1.9",
+    "body-parser": "^1.20.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
