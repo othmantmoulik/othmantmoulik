@@ -66,6 +66,25 @@ const requireAuth = (req, res, next) => {
 // PUBLIC ROUTES
 // ============================================
 
+// Health check endpoint
+app.get('/health', async (req, res) => {
+    try {
+        const db = require('./config/database');
+        await db.get('SELECT 1');
+        res.json({
+            status: 'ok',
+            database: 'connected',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            database: 'disconnected',
+            error: error.message
+        });
+    }
+});
+
 // Home page
 app.get('/', (req, res) => {
     res.render('home', {
@@ -99,6 +118,8 @@ app.post('/api/auth/signup', async (req, res) => {
     try {
         const { email, password, fullName } = req.body;
 
+        console.log('Signup attempt:', { email, fullName, hasPassword: !!password });
+
         // Check if user exists
         const existingUser = await User.findByEmail(email);
         if (existingUser) {
@@ -128,7 +149,12 @@ app.post('/api/auth/signup', async (req, res) => {
         });
     } catch (error) {
         console.error('Signup error:', error);
-        res.status(500).json({ error: 'Failed to create account' });
+        console.error('Error details:', error.message);
+        console.error('Error stack:', error.stack);
+        res.status(500).json({
+            error: 'Failed to create account',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 });
 
