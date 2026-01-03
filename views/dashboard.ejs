@@ -4,292 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - AlMasterclass</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #000; color: #fff; }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+        .header { background: rgba(0,0,0,0.95); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 20px 40px; position: sticky; top: 0; z-index: 100; }
+        .header-content { max-width: 1440px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 24px; font-weight: 900; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .logo-mark { width: 36px; height: 36px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .nav { display: flex; gap: 24px; align-items: center; }
+        .nav a { color: #999; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.3s; }
+        .nav a:hover { color: #fff; }
+        .btn-logout { background: #1a1a1a; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; }
+        .btn-logout:hover { background: #2a2a2a; }
 
-        .nav {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px 30px;
-            margin-bottom: 30px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+        .container { max-width: 1440px; margin: 0 auto; padding: 40px; }
+        .welcome { margin-bottom: 40px; }
+        .welcome h1 { font-size: 40px; font-weight: 900; margin-bottom: 8px; }
+        .badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; margin-top: 8px; }
+        .badge-free { background: #1a1a1a; color: #999; }
+        .badge-premium { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; }
 
-        .nav-brand {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #764ba2;
-        }
+        .affiliate-box { background: linear-gradient(135deg, #667eea, #764ba2); padding: 40px; border-radius: 20px; margin-bottom: 40px; }
+        .affiliate-box h2 { font-size: 28px; font-weight: 900; margin-bottom: 12px; }
+        .affiliate-link-group { display: flex; gap: 12px; margin-top: 20px; }
+        .affiliate-link { flex: 1; padding: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; color: #fff; font-size: 14px; }
+        .btn-copy { padding: 16px 32px; background: #fff; color: #000; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .btn-copy:hover { background: #f0f0f0; }
 
-        .nav-links {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 40px; }
+        .stat-card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 32px; border-radius: 16px; }
+        .stat-card h3 { font-size: 14px; color: #999; margin-bottom: 12px; font-weight: 600; }
+        .stat-value { font-size: 36px; font-weight: 900; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        .nav-link {
-            color: #333;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            transition: background 0.3s;
-        }
+        .card { background: #0a0a0a; border: 1px solid #1a1a1a; padding: 32px; border-radius: 16px; }
+        .card h3 { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+        .card ol { margin-left: 20px; line-height: 2; color: #999; }
 
-        .nav-link:hover {
-            background: #f0f0f0;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border-radius: 50px;
-            border: none;
-            cursor: pointer;
-            font-size: 1em;
-        }
-
-        .btn-logout {
-            background: #dc3545;
-            color: white;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .welcome {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .welcome h1 {
-            color: #764ba2;
-            margin-bottom: 10px;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9em;
-            font-weight: bold;
-        }
-
-        .badge-free {
-            background: #6c757d;
-            color: white;
-        }
-
-        .badge-premium {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .card h3 {
-            color: #764ba2;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-        }
-
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: bold;
-            color: #764ba2;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .affiliate-box {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-        }
-
-        .affiliate-box h2 {
-            margin-bottom: 15px;
-        }
-
-        .affiliate-link-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .affiliate-link {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: 2px solid white;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            font-size: 1em;
-        }
-
-        .btn-copy {
-            padding: 12px 24px;
-            background: white;
-            color: #764ba2;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .btn-copy:hover {
-            background: #f0f0f0;
-        }
-
-        .btn-upgrade {
-            display: inline-block;
-            padding: 15px 30px;
-            background: white;
-            color: #764ba2;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        .btn-upgrade:hover {
-            background: #f0f0f0;
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .container { padding: 20px; }
+            .affiliate-link-group { flex-direction: column; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <nav class="nav">
-            <div class="nav-brand">AlMasterclass</div>
-            <div class="nav-links">
-                <a href="/dashboard" class="nav-link">Dashboard</a>
-                <a href="/courses" class="nav-link">Courses</a>
-                <a href="/community" class="nav-link">Community</a>
-                <a href="/affiliate" class="nav-link">Affiliate</a>
-                <form action="/api/auth/logout" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-logout">Logout</button>
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo"><div class="logo-mark">A</div>AlMasterclass</a>
+            <nav class="nav">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/affiliate">Affiliate</a>
+                <form action="/api/auth/logout" method="POST" style="display:inline;">
+                    <button type="submit" class="btn-logout">Sign Out</button>
                 </form>
-            </div>
-        </nav>
+            </nav>
+        </div>
+    </header>
 
+    <div class="container">
         <div class="welcome">
-            <h1>Welcome back, <%= user.full_name %>! 👋</h1>
-            <p>
-                <span class="badge <%= user.subscription_status === 'active' ? 'badge-premium' : 'badge-free' %>">
-                    <%= user.subscription_status === 'active' ? 'Premium Member' : 'Free Account' %>
-                </span>
-            </p>
+            <h1>Welcome back, <%= user.full_name %>!</h1>
+            <span class="badge <%= user.subscription_status === 'active' ? 'badge-premium' : 'badge-free' %>">
+                <%= user.subscription_status === 'active' ? 'Premium Member' : 'Free Account' %>
+            </span>
         </div>
 
-        <% if (user.subscription_status !== 'active') { %>
         <div class="affiliate-box">
-            <h2>Unlock Premium Content</h2>
-            <p>Get access to all courses, community features, and start earning 30% recurring commissions!</p>
-            <a href="/upgrade" class="btn-upgrade">Upgrade to Premium →</a>
-        </div>
-        <% } %>
-
-        <div class="affiliate-box">
-            <h2>📢 Your Affiliate Link</h2>
-            <p>Share this link and earn 30% recurring commissions FOR LIFE when your referrals upgrade!</p>
-            <div class="affiliate-link-container">
-                <input type="text" class="affiliate-link" id="affiliateLink" value="<%= affiliateLink %>" readonly>
+            <h2>Your Affiliate Link</h2>
+            <p>Share this link and earn 30% recurring commissions FOR LIFE!</p>
+            <div class="affiliate-link-group">
+                <input type="text" class="affiliate-link" id="affLink" value="<%= affiliateLink %>" readonly>
                 <button class="btn-copy" onclick="copyLink()">Copy Link</button>
             </div>
-            <p style="margin-top: 15px; font-size: 0.9em; opacity: 0.9;">
-                Your unique code: <strong><%= user.affiliate_code %></strong>
-            </p>
+            <p style="margin-top:16px; font-size:14px; opacity:0.9;">Your code: <strong><%= user.affiliate_code %></strong></p>
         </div>
 
-        <h2 style="color: white; margin-bottom: 20px;">Your Affiliate Performance</h2>
-
-        <div class="grid">
-            <div class="card">
+        <div class="stats-grid">
+            <div class="stat-card">
                 <h3>Total Referrals</h3>
-                <div class="stat-number"><%= affiliateStats.total_referrals || 0 %></div>
-                <div class="stat-label">People you've referred</div>
+                <div class="stat-value"><%= affiliateStats.total_referrals || 0 %></div>
             </div>
-
-            <div class="card">
+            <div class="stat-card">
                 <h3>Active Subscribers</h3>
-                <div class="stat-number"><%= affiliateStats.active_referrals || 0 %></div>
-                <div class="stat-label">Paying members</div>
+                <div class="stat-value"><%= affiliateStats.active_referrals || 0 %></div>
             </div>
-
-            <div class="card">
+            <div class="stat-card">
                 <h3>Total Earned</h3>
-                <div class="stat-number">$<%= (affiliateStats.total_commissions_earned || 0).toFixed(2) %></div>
-                <div class="stat-label">All-time commissions</div>
+                <div class="stat-value">$<%= (affiliateStats.total_commissions_earned || 0).toFixed(2) %></div>
             </div>
-
-            <div class="card">
+            <div class="stat-card">
                 <h3>Pending Payout</h3>
-                <div class="stat-number">$<%= (affiliateStats.pending_commissions || 0).toFixed(2) %></div>
-                <div class="stat-label">Ready to withdraw</div>
+                <div class="stat-value">$<%= (affiliateStats.pending_commissions || 0).toFixed(2) %></div>
             </div>
         </div>
 
         <div class="card">
             <h3>How It Works</h3>
-            <ol style="line-height: 2; color: #666;">
-                <li>Share your unique affiliate link with friends and family</li>
-                <li>When they sign up (free), they're tied to you forever via their email</li>
-                <li>If they upgrade to premium (even months later), you earn 30% commission</li>
-                <li>You keep earning 30% every month as long as they stay subscribed</li>
-                <li>Minimum payout: $50 (automatic when reached)</li>
+            <ol>
+                <li>Share your unique affiliate link</li>
+                <li>When they sign up (free), they're tied to you forever</li>
+                <li>If they upgrade to premium (even months later), you earn 30%</li>
+                <li>You keep earning every month as long as they stay subscribed</li>
+                <li>Minimum payout: $50 (automatic)</li>
             </ol>
         </div>
     </div>
 
     <script>
         function copyLink() {
-            const linkInput = document.getElementById('affiliateLink');
-            linkInput.select();
-            linkInput.setSelectionRange(0, 99999);
+            const link = document.getElementById('affLink');
+            link.select();
             document.execCommand('copy');
-
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = 'Copied!';
-            setTimeout(() => {
-                btn.textContent = originalText;
-            }, 2000);
+            event.target.textContent = 'Copied!';
+            setTimeout(() => event.target.textContent = 'Copy Link', 2000);
         }
     </script>
 </body>
