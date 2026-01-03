@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: almasterclass-platform
+    env: node
+    plan: free
+    buildCommand: npm install && npm run migrate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PORT
+        value: 10000
+      - key: COMMISSION_PERCENTAGE
+        value: 30
+      - key: MINIMUM_PAYOUT
+        value: 50
+      - key: DATABASE_PATH
+        value: /opt/render/project/src/database/masterclass.db
