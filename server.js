@@ -195,6 +195,131 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // ============================================
+// DEMO ROUTES (No login required - with fake data)
+// ============================================
+
+// Demo Dashboard
+app.get('/demo', (req, res) => {
+    const demoUser = {
+        id: 999,
+        full_name: 'Demo User',
+        email: 'demo@almasterclass.com',
+        affiliate_code: 'DEMO123ABC',
+        subscription_status: 'free'
+    };
+
+    const demoStats = {
+        total_referrals: 12,
+        active_referrals: 5,
+        total_commissions_earned: 423.50,
+        pending_commissions: 141.00,
+        paid_commissions: 282.50
+    };
+
+    const demoAffiliateLink = `${process.env.BASE_URL || 'http://localhost:3000'}/join?ref=DEMO123ABC`;
+
+    res.render('dashboard', {
+        user: demoUser,
+        affiliateStats: demoStats,
+        affiliateLink: demoAffiliateLink
+    });
+});
+
+// Demo Affiliate Page
+app.get('/demo/affiliate', (req, res) => {
+    const demoUser = {
+        id: 999,
+        full_name: 'Demo User',
+        email: 'demo@almasterclass.com',
+        affiliate_code: 'DEMO123ABC'
+    };
+
+    const demoStats = {
+        total_referrals: 12,
+        active_referrals: 5,
+        total_commissions_earned: 423.50,
+        pending_commissions: 141.00,
+        paid_commissions: 282.50
+    };
+
+    const demoReferrals = [
+        {
+            full_name: 'Sarah Johnson',
+            email: 'sarah@example.com',
+            signup_date: new Date('2024-11-15'),
+            status: 'upgraded',
+            upgraded_at: new Date('2024-12-01')
+        },
+        {
+            full_name: 'Ahmed Hassan',
+            email: 'ahmed@example.com',
+            signup_date: new Date('2024-12-10'),
+            status: 'upgraded',
+            upgraded_at: new Date('2024-12-15')
+        },
+        {
+            full_name: 'Maria Garcia',
+            email: 'maria@example.com',
+            signup_date: new Date('2025-01-02'),
+            status: 'upgraded',
+            upgraded_at: new Date('2025-01-02')
+        },
+        {
+            full_name: 'John Smith',
+            email: 'john@example.com',
+            signup_date: new Date('2024-10-20'),
+            status: 'upgraded',
+            upgraded_at: new Date('2024-11-05')
+        },
+        {
+            full_name: 'Lisa Chen',
+            email: 'lisa@example.com',
+            signup_date: new Date('2024-11-28'),
+            status: 'upgraded',
+            upgraded_at: new Date('2024-12-20')
+        },
+        {
+            full_name: 'Omar Al-Rahman',
+            email: 'omar@example.com',
+            signup_date: new Date('2024-12-05'),
+            status: 'free',
+            upgraded_at: null
+        },
+        {
+            full_name: 'Jennifer Lopez',
+            email: 'jennifer@example.com',
+            signup_date: new Date('2024-12-18'),
+            status: 'free',
+            upgraded_at: null
+        }
+    ];
+
+    const demoAffiliateLink = `${process.env.BASE_URL || 'http://localhost:3000'}/join?ref=DEMO123ABC`;
+
+    res.render('affiliate', {
+        user: demoUser,
+        affiliateStats: demoStats,
+        referrals: demoReferrals,
+        affiliateLink: demoAffiliateLink
+    });
+});
+
+// Demo Upgrade Page
+app.get('/demo/upgrade', (req, res) => {
+    const demoUser = {
+        id: 999,
+        full_name: 'Demo User',
+        subscription_status: 'free'
+    };
+
+    res.render('upgrade', {
+        user: demoUser,
+        monthlyPriceId: 'price_demo_monthly',
+        yearlyPriceId: 'price_demo_yearly'
+    });
+});
+
+// ============================================
 // PROTECTED ROUTES
 // ============================================
 
