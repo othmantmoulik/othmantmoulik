@@ -2,14 +2,18 @@ const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const path = require('path');
 
-const dbPath = path.join(__dirname, '..', 'database', 'masterclass.db');
+// Use environment variable for database path if available (for production)
+const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '..', 'database', 'masterclass.db');
 const schemaPath = path.join(__dirname, '..', 'database', 'schema.sql');
 
 // Ensure database directory exists
 const dbDir = path.dirname(dbPath);
 if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
+    console.log(`✓ Created database directory: ${dbDir}`);
 }
+
+console.log(`Database will be created at: ${dbPath}`);
 
 // Read schema file
 const schema = fs.readFileSync(schemaPath, 'utf8');
