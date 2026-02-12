@@ -1,0 +1,384 @@
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "primaryCurrency" TEXT NOT NULL DEFAULT 'USD',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "Account" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "balance" REAL NOT NULL DEFAULT 0,
+    "institution" TEXT,
+    "color" TEXT,
+    "icon" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "CurrencyRate" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "base" TEXT NOT NULL,
+    "target" TEXT NOT NULL,
+    "rate" REAL NOT NULL,
+    "date" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CreateTable
+CREATE TABLE "Transaction" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "originalAmount" REAL NOT NULL,
+    "originalCurrency" TEXT NOT NULL,
+    "convertedAmount" REAL NOT NULL,
+    "conversionRate" REAL NOT NULL DEFAULT 1.0,
+    "category" TEXT,
+    "date" DATETIME NOT NULL,
+    "isReconciled" BOOLEAN NOT NULL DEFAULT false,
+    "revenueStreamId" TEXT,
+    "importBatchId" TEXT,
+    "notes" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Transaction_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Transaction_revenueStreamId_fkey" FOREIGN KEY ("revenueStreamId") REFERENCES "RevenueStream" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Transfer" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "fromAccountId" TEXT NOT NULL,
+    "toAccountId" TEXT NOT NULL,
+    "fromTransactionId" TEXT NOT NULL,
+    "toTransactionId" TEXT NOT NULL,
+    "conversionRate" REAL NOT NULL DEFAULT 1.0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Transfer_fromAccountId_fkey" FOREIGN KEY ("fromAccountId") REFERENCES "Account" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Transfer_toAccountId_fkey" FOREIGN KEY ("toAccountId") REFERENCES "Account" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Transfer_fromTransactionId_fkey" FOREIGN KEY ("fromTransactionId") REFERENCES "Transaction" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Transfer_toTransactionId_fkey" FOREIGN KEY ("toTransactionId") REFERENCES "Transaction" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Client" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT,
+    "company" TEXT,
+    "notes" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Client_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "RevenueStream" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'active',
+    "clientId" TEXT,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "color" TEXT,
+    "startDate" DATETIME,
+    "endDate" DATETIME,
+    "notes" TEXT,
+    "streamVariables" TEXT,
+    "linkedExpenseCategoryId" TEXT,
+    "patternData" TEXT,
+    "effortHoursPerWeek" REAL,
+    "effortLevel" TEXT,
+    "scalability" TEXT,
+    "strategicTag" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "RevenueStream_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "RevenueStream_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "Client" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "PendingPayout" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "revenueStreamId" TEXT NOT NULL,
+    "clientId" TEXT,
+    "amount" REAL NOT NULL,
+    "currency" TEXT NOT NULL,
+    "convertedAmount" REAL,
+    "expectedDate" DATETIME NOT NULL,
+    "periodCovered" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'expected',
+    "confidence" TEXT NOT NULL DEFAULT 'medium',
+    "sourceDetail" TEXT,
+    "actualAmountReceived" REAL,
+    "variance" REAL,
+    "receivedDate" DATETIME,
+    "linkedTransactionId" TEXT,
+    "isAutoGenerated" BOOLEAN NOT NULL DEFAULT false,
+    "notes" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "PendingPayout_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "PendingPayout_revenueStreamId_fkey" FOREIGN KEY ("revenueStreamId") REFERENCES "RevenueStream" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "PendingPayout_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "Client" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "PendingPayout_linkedTransactionId_fkey" FOREIGN KEY ("linkedTransactionId") REFERENCES "Transaction" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Debt" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "creditorName" TEXT NOT NULL,
+    "description" TEXT,
+    "originalAmount" REAL NOT NULL,
+    "remainingBalance" REAL NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "interestRate" REAL NOT NULL DEFAULT 0,
+    "interestType" TEXT NOT NULL DEFAULT 'none',
+    "minimumPayment" REAL,
+    "dueDay" INTEGER,
+    "payoffDeadline" DATETIME,
+    "priority" TEXT NOT NULL DEFAULT 'medium',
+    "status" TEXT NOT NULL DEFAULT 'current',
+    "isIslamic" BOOLEAN NOT NULL DEFAULT false,
+    "autoPay" BOOLEAN NOT NULL DEFAULT false,
+    "notes" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Debt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "DebtPayment" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "debtId" TEXT NOT NULL,
+    "transactionId" TEXT,
+    "amount" REAL NOT NULL,
+    "date" DATETIME NOT NULL,
+    "notes" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "DebtPayment_debtId_fkey" FOREIGN KEY ("debtId") REFERENCES "Debt" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "DebtPayment_transactionId_fkey" FOREIGN KEY ("transactionId") REFERENCES "Transaction" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "FixedBill" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "amount" REAL NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "dueDay" INTEGER,
+    "scope" TEXT NOT NULL DEFAULT 'personal',
+    "category" TEXT,
+    "isEssential" BOOLEAN NOT NULL DEFAULT true,
+    "isRevenueGenerating" BOOLEAN NOT NULL DEFAULT false,
+    "linkedRevenueStreamId" TEXT,
+    "paymentMethod" TEXT,
+    "autoPay" BOOLEAN NOT NULL DEFAULT false,
+    "notes" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "FixedBill_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "FixedBill_linkedRevenueStreamId_fkey" FOREIGN KEY ("linkedRevenueStreamId") REFERENCES "RevenueStream" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "BillPaymentStatus" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "fixedBillId" TEXT NOT NULL,
+    "month" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'upcoming',
+    "paidDate" DATETIME,
+    "paidAmount" REAL,
+    "linkedTransactionId" TEXT,
+    "notes" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "BillPaymentStatus_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "BillPaymentStatus_fixedBillId_fkey" FOREIGN KEY ("fixedBillId") REFERENCES "FixedBill" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "BillPaymentStatus_linkedTransactionId_fkey" FOREIGN KEY ("linkedTransactionId") REFERENCES "Transaction" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Goal" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "targetAmount" REAL NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'USD',
+    "savedAmount" REAL NOT NULL DEFAULT 0,
+    "monthlyContribution" REAL,
+    "targetDate" DATETIME,
+    "priority" TEXT NOT NULL DEFAULT 'medium',
+    "bucket" TEXT,
+    "needVsWant" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'saving',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Goal_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "AllocationPlan" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "triggerType" TEXT NOT NULL,
+    "triggerAmount" REAL,
+    "triggerTransactionId" TEXT,
+    "month" TEXT NOT NULL,
+    "totalIncome" REAL NOT NULL,
+    "totalBillsReserved" REAL NOT NULL,
+    "totalDebtAllocated" REAL NOT NULL,
+    "totalSafetyNet" REAL NOT NULL,
+    "totalGoals" REAL NOT NULL,
+    "totalInvest" REAL NOT NULL,
+    "totalFun" REAL NOT NULL,
+    "lineItems" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'suggested',
+    "confirmedAt" DATETIME,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "AllocationPlan_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "WaterfallConfig" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "debtStrategy" TEXT NOT NULL DEFAULT 'deadline_first',
+    "safetyNetPct" REAL NOT NULL DEFAULT 0.10,
+    "debtPct" REAL NOT NULL DEFAULT 0.20,
+    "goalsPct" REAL NOT NULL DEFAULT 0.35,
+    "investPct" REAL NOT NULL DEFAULT 0.10,
+    "funPct" REAL NOT NULL DEFAULT 0.25,
+    "readinessGateThreshold" INTEGER NOT NULL DEFAULT 70,
+    "investmentGateEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "WaterfallConfig_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "BankTemplate" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "bankName" TEXT NOT NULL,
+    "parsingPattern" TEXT,
+    "columnMapping" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "BankTemplate_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Alert" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "severity" TEXT NOT NULL DEFAULT 'warning',
+    "relatedType" TEXT,
+    "relatedId" TEXT,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
+    "isDismissed" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Alert_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "Account_userId_idx" ON "Account"("userId");
+
+-- CreateIndex
+CREATE INDEX "CurrencyRate_base_target_date_idx" ON "CurrencyRate"("base", "target", "date");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "CurrencyRate_base_target_date_key" ON "CurrencyRate"("base", "target", "date");
+
+-- CreateIndex
+CREATE INDEX "Transaction_userId_date_idx" ON "Transaction"("userId", "date");
+
+-- CreateIndex
+CREATE INDEX "Transaction_accountId_idx" ON "Transaction"("accountId");
+
+-- CreateIndex
+CREATE INDEX "Transaction_revenueStreamId_idx" ON "Transaction"("revenueStreamId");
+
+-- CreateIndex
+CREATE INDEX "Transaction_importBatchId_idx" ON "Transaction"("importBatchId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Transfer_fromTransactionId_key" ON "Transfer"("fromTransactionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Transfer_toTransactionId_key" ON "Transfer"("toTransactionId");
+
+-- CreateIndex
+CREATE INDEX "Client_userId_idx" ON "Client"("userId");
+
+-- CreateIndex
+CREATE INDEX "RevenueStream_userId_status_idx" ON "RevenueStream"("userId", "status");
+
+-- CreateIndex
+CREATE INDEX "RevenueStream_clientId_idx" ON "RevenueStream"("clientId");
+
+-- CreateIndex
+CREATE INDEX "PendingPayout_userId_status_expectedDate_idx" ON "PendingPayout"("userId", "status", "expectedDate");
+
+-- CreateIndex
+CREATE INDEX "PendingPayout_revenueStreamId_status_idx" ON "PendingPayout"("revenueStreamId", "status");
+
+-- CreateIndex
+CREATE INDEX "PendingPayout_userId_expectedDate_idx" ON "PendingPayout"("userId", "expectedDate");
+
+-- CreateIndex
+CREATE INDEX "Debt_userId_status_payoffDeadline_idx" ON "Debt"("userId", "status", "payoffDeadline");
+
+-- CreateIndex
+CREATE INDEX "DebtPayment_debtId_idx" ON "DebtPayment"("debtId");
+
+-- CreateIndex
+CREATE INDEX "FixedBill_userId_scope_dueDay_idx" ON "FixedBill"("userId", "scope", "dueDay");
+
+-- CreateIndex
+CREATE INDEX "BillPaymentStatus_userId_month_status_idx" ON "BillPaymentStatus"("userId", "month", "status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BillPaymentStatus_fixedBillId_month_key" ON "BillPaymentStatus"("fixedBillId", "month");
+
+-- CreateIndex
+CREATE INDEX "Goal_userId_status_idx" ON "Goal"("userId", "status");
+
+-- CreateIndex
+CREATE INDEX "AllocationPlan_userId_month_status_idx" ON "AllocationPlan"("userId", "month", "status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "WaterfallConfig_userId_key" ON "WaterfallConfig"("userId");
+
+-- CreateIndex
+CREATE INDEX "BankTemplate_userId_idx" ON "BankTemplate"("userId");
+
+-- CreateIndex
+CREATE INDEX "Alert_userId_isRead_isDismissed_idx" ON "Alert"("userId", "isRead", "isDismissed");

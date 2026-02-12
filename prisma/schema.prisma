@@ -1,0 +1,426 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ==========================================
+// USER & SETTINGS
+// ==========================================
+
+model User {
+  id                String   @id @default(uuid())
+  name              String
+  email             String   @unique
+  primaryCurrency   String   @default("USD")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  accounts          Account[]
+  transactions      Transaction[]
+  revenueStreams    RevenueStream[]
+  pendingPayouts   PendingPayout[]
+  debts             Debt[]
+  fixedBills        FixedBill[]
+  billPaymentStatuses BillPaymentStatus[]
+  goals             Goal[]
+  allocationPlans  AllocationPlan[]
+  waterfallConfig  WaterfallConfig?
+  clients           Client[]
+  bankTemplates     BankTemplate[]
+  alerts            Alert[]
+}
+
+// ==========================================
+// ACCOUNTS & CURRENCY
+// ==========================================
+
+model Account {
+  id              String   @id @default(uuid())
+  userId          String
+  name            String
+  type            String   // checking, savings, credit, investment, cash
+  currency        String   @default("USD")
+  balance         Float    @default(0)
+  institution     String?
+  color           String?
+  icon            String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id])
+  transactions    Transaction[]
+  transfersFrom   Transfer[]    @relation("TransferFrom")
+  transfersTo     Transfer[]    @relation("TransferTo")
+
+  @@index([userId])
+}
+
+model CurrencyRate {
+  id        String   @id @default(uuid())
+  base      String
+  target    String
+  rate      Float
+  date      String   // YYYY-MM-DD
+  createdAt DateTime @default(now())
+
+  @@unique([base, target, date])
+  @@index([base, target, date])
+}
+
+// ==========================================
+// TRANSACTIONS
+// ==========================================
+
+model Transaction {
+  id                 String   @id @default(uuid())
+  userId             String
+  accountId          String
+  type               String   // income, expense, transfer
+  description        String
+  originalAmount     Float
+  originalCurrency   String
+  convertedAmount    Float    // in user's primary currency
+  conversionRate     Float    @default(1.0)
+  category           String?
+  date               DateTime
+  isReconciled       Boolean  @default(false)
+  revenueStreamId    String?
+  importBatchId      String?
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user               User           @relation(fields: [userId], references: [id])
+  account            Account        @relation(fields: [accountId], references: [id])
+  revenueStream      RevenueStream? @relation(fields: [revenueStreamId], references: [id])
+  linkedPayouts      PendingPayout[] @relation("PayoutTransaction")
+  linkedBillPayments BillPaymentStatus[]
+  linkedDebtPayments DebtPayment[]
+  transferFrom       Transfer?      @relation("TransferFromTx")
+  transferTo         Transfer?      @relation("TransferToTx")
+
+  @@index([userId, date])
+  @@index([accountId])
+  @@index([revenueStreamId])
+  @@index([importBatchId])
+}
+
+model Transfer {
+  id                String   @id @default(uuid())
+  fromAccountId     String
+  toAccountId       String
+  fromTransactionId String   @unique
+  toTransactionId   String   @unique
+  conversionRate    Float    @default(1.0)
+  createdAt         DateTime @default(now())
+
+  fromAccount       Account     @relation("TransferFrom", fields: [fromAccountId], references: [id])
+  toAccount         Account     @relation("TransferTo", fields: [toAccountId], references: [id])
+  fromTransaction   Transaction @relation("TransferFromTx", fields: [fromTransactionId], references: [id])
+  toTransaction     Transaction @relation("TransferToTx", fields: [toTransactionId], references: [id])
+}
+
+// ==========================================
+// CLIENTS
+// ==========================================
+
+model Client {
+  id             String   @id @default(uuid())
+  userId         String
+  name           String
+  email          String?
+  company        String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id])
+  revenueStreams RevenueStream[]
+  pendingPayouts PendingPayout[]
+
+  @@index([userId])
+}
+
+// ==========================================
+// REVENUE STREAMS
+// ==========================================
+
+model RevenueStream {
+  id                      String   @id @default(uuid())
+  userId                  String
+  name                    String
+  type                    String   // retainer, rev_share, affiliate, project, consulting, subscription, product_sales, ad_revenue
+  status                  String   @default("active") // active, pipeline, paused, seasonal, ended
+  clientId                String?
+  currency                String   @default("USD")
+  color                   String?
+  startDate               DateTime?
+  endDate                 DateTime?
+  notes                   String?
+  streamVariables         String?  // JSON - type-specific variables
+  linkedExpenseCategoryId String?
+  patternData             String?  // JSON - cached pattern detection data
+  effortHoursPerWeek      Float?
+  effortLevel             String?  // minimal, low, medium, high, very_high
+  scalability             String?  // highly_scalable, partially, linear, unknown
+  strategicTag            String?  // core_business, side_income, passive, experimental
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  user                    User            @relation(fields: [userId], references: [id])
+  client                  Client?         @relation(fields: [clientId], references: [id])
+  transactions            Transaction[]
+  pendingPayouts          PendingPayout[]
+  linkedBills             FixedBill[]
+
+  @@index([userId, status])
+  @@index([clientId])
+}
+
+// ==========================================
+// PENDING PAYOUTS
+// ==========================================
+
+model PendingPayout {
+  id                    String    @id @default(uuid())
+  userId                String
+  revenueStreamId       String
+  clientId              String?
+  amount                Float
+  currency              String
+  convertedAmount       Float?
+  expectedDate          DateTime
+  periodCovered         String?
+  status                String    @default("expected") // expected, invoiced, confirmed, received, late, disputed, written_off
+  confidence            String    @default("medium") // high, medium, low, speculative
+  sourceDetail          String?
+  actualAmountReceived  Float?
+  variance              Float?
+  receivedDate          DateTime?
+  linkedTransactionId   String?
+  isAutoGenerated       Boolean   @default(false)
+  notes                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User           @relation(fields: [userId], references: [id])
+  revenueStream         RevenueStream  @relation(fields: [revenueStreamId], references: [id])
+  client                Client?        @relation(fields: [clientId], references: [id])
+  linkedTransaction     Transaction?   @relation("PayoutTransaction", fields: [linkedTransactionId], references: [id])
+
+  @@index([userId, status, expectedDate])
+  @@index([revenueStreamId, status])
+  @@index([userId, expectedDate])
+}
+
+// ==========================================
+// DEBTS
+// ==========================================
+
+model Debt {
+  id               String    @id @default(uuid())
+  userId           String
+  creditorName     String
+  description      String?
+  originalAmount   Float
+  remainingBalance Float
+  currency         String    @default("USD")
+  interestRate     Float     @default(0)
+  interestType     String    @default("none") // none, fixed, variable, compound
+  minimumPayment   Float?
+  dueDay           Int?
+  payoffDeadline   DateTime?
+  priority         String    @default("medium") // critical, high, medium, low
+  status           String    @default("current") // current, partial, overdue, paid_off
+  isIslamic        Boolean   @default(false)
+  autoPay          Boolean   @default(false)
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user             User          @relation(fields: [userId], references: [id])
+  payments         DebtPayment[]
+
+  @@index([userId, status, payoffDeadline])
+}
+
+model DebtPayment {
+  id              String   @id @default(uuid())
+  debtId          String
+  transactionId   String?
+  amount          Float
+  date            DateTime
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  debt            Debt         @relation(fields: [debtId], references: [id])
+  transaction     Transaction? @relation(fields: [transactionId], references: [id])
+
+  @@index([debtId])
+}
+
+// ==========================================
+// FIXED BILLS
+// ==========================================
+
+model FixedBill {
+  id                     String   @id @default(uuid())
+  userId                 String
+  name                   String
+  amount                 Float
+  currency               String   @default("USD")
+  dueDay                 Int?
+  scope                  String   @default("personal") // personal, business
+  category               String?
+  isEssential            Boolean  @default(true)
+  isRevenueGenerating    Boolean  @default(false)
+  linkedRevenueStreamId  String?
+  paymentMethod          String?
+  autoPay                Boolean  @default(false)
+  notes                  String?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  user                   User              @relation(fields: [userId], references: [id])
+  linkedRevenueStream    RevenueStream?    @relation(fields: [linkedRevenueStreamId], references: [id])
+  paymentStatuses        BillPaymentStatus[]
+
+  @@index([userId, scope, dueDay])
+}
+
+model BillPaymentStatus {
+  id                  String    @id @default(uuid())
+  userId              String
+  fixedBillId         String
+  month               String    // YYYY-MM
+  status              String    @default("upcoming") // upcoming, due, paid, overdue, skipped
+  paidDate            DateTime?
+  paidAmount          Float?
+  linkedTransactionId String?
+  notes               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  user                User         @relation(fields: [userId], references: [id])
+  fixedBill           FixedBill    @relation(fields: [fixedBillId], references: [id])
+  linkedTransaction   Transaction? @relation(fields: [linkedTransactionId], references: [id])
+
+  @@unique([fixedBillId, month])
+  @@index([userId, month, status])
+}
+
+// ==========================================
+// GOALS
+// ==========================================
+
+model Goal {
+  id                    String    @id @default(uuid())
+  userId                String
+  name                  String
+  targetAmount          Float
+  currency              String    @default("USD")
+  savedAmount           Float     @default(0)
+  monthlyContribution   Float?
+  targetDate            DateTime?
+  priority              String    @default("medium") // critical, high, medium, low
+  bucket                String?   // safety_net, debt_payoff, house_fund, investment, fun_money, custom
+  needVsWant            String?   // need, want
+  status                String    @default("saving") // saving, on_hold, bought, cancelled
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+}
+
+// ==========================================
+// ALLOCATION ENGINE
+// ==========================================
+
+model AllocationPlan {
+  id                    String    @id @default(uuid())
+  userId                String
+  triggerType           String    // income_received, manual, scheduled, monthly_reset
+  triggerAmount         Float?
+  triggerTransactionId  String?
+  month                 String
+  totalIncome           Float
+  totalBillsReserved    Float
+  totalDebtAllocated    Float
+  totalSafetyNet        Float
+  totalGoals            Float
+  totalInvest           Float
+  totalFun              Float
+  lineItems             String?   // JSON array
+  status                String    @default("suggested") // suggested, confirmed, modified, rejected
+  confirmedAt           DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User @relation(fields: [userId], references: [id])
+
+  @@index([userId, month, status])
+}
+
+model WaterfallConfig {
+  id                    String   @id @default(uuid())
+  userId                String   @unique
+  debtStrategy          String   @default("deadline_first") // avalanche, snowball, deadline_first, custom
+  safetyNetPct          Float    @default(0.10)
+  debtPct               Float    @default(0.20)
+  goalsPct              Float    @default(0.35)
+  investPct             Float    @default(0.10)
+  funPct                Float    @default(0.25)
+  readinessGateThreshold Int     @default(70)
+  investmentGateEnabled Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  user                  User @relation(fields: [userId], references: [id])
+}
+
+// ==========================================
+// BANK TEMPLATES (for PDF import)
+// ==========================================
+
+model BankTemplate {
+  id            String   @id @default(uuid())
+  userId        String
+  bankName      String
+  parsingPattern String? // JSON - saved parsing pattern
+  columnMapping String?  // JSON
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+// ==========================================
+// ALERTS
+// ==========================================
+
+model Alert {
+  id          String    @id @default(uuid())
+  userId      String
+  type        String    // contract_ending, payout_overdue, declining_trend, concentration_risk, cash_gap, debt_off_track, bill_overdue
+  title       String
+  message     String
+  severity    String    @default("warning") // info, warning, critical
+  relatedType String?   // revenue_stream, debt, bill, goal
+  relatedId   String?
+  isRead      Boolean   @default(false)
+  isDismissed Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  user        User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead, isDismissed])
+}
